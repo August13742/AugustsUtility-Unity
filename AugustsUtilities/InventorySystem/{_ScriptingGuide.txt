@@ -1,0 +1,147 @@
+================================== Inventory System - Scripting Guide
+
+This guide outlines how to interact with the Inventory System from your C# scripts. It covers finding inventories, manipulating their contents, and responding to changes.
+
+    Accessing the Inventory Manager
+
+The InventoryManager is a singleton that oversees all inventories. Access it via its static Instance property. It's best to cache this reference.
+
+private InventoryManager _inventoryManager;
+
+void Awake()
+{
+    _inventoryManager = InventoryManager.Instance;
+    if (_inventoryManager == null)
+    {
+        Debug.LogError("InventoryManager not found in the scene!");
+    }
+}
+
+    Finding and Getting Inventories
+
+You can get references to specific inventories through the manager.
+
+A. Get the Player's Inventory (Directly):
+The manager holds a direct reference for convenience.
+
+InventoryComponent playerInventory = _inventoryManager.PlayerInventory;
+if (playerInventory != null)
+{
+    // ... do something with the player's inventory
+}
+
+B. Get All Inventories of a Specific Category:
+Use this to find all chests, merchant inventories, etc.
+
+// Find all storage containers in the game
+IEnumerable<InventoryComponent> allChests = _inventoryManager.GetInventoriesByCategory(Category.StorageContainer);
+
+foreach (var chest in allChests)
+{
+    // ...
+}
+
+    Interacting with an InventoryComponent
+
+Once you have a reference to an InventoryComponent, you can perform operations on it.
+
+A. Adding and Removing Items:
+These methods use the item's string ID. AddItem returns the amount that could NOT be added (0 on full success). RemoveItem returns true only if the full amount was successfully removed.
+
+// Add 5 health potions
+int remaining = playerInventory.AddItem("potion_health", 5);
+if (remaining > 0)
+{
+    Debug.Log("Inventory is full, could not add all items.");
+}
+
+// Remove 1 sword
+bool success = playerInventory.RemoveItem("weapon_sword", 1);
+if (!success)
+{
+    Debug.Log("Could not find a sword to remove.");
+}
+
+B. Checking Contents:
+Use these for checks and getting total counts.
+
+int potionCount = playerInventory.GetItemCount("potion_health");
+Debug.Log($"Player has {potionCount} health potions.");
+
+if (playerInventory.HasItem("potion_mana", 3))
+{
+    Debug.Log("Player has enough mana potions.");
+}
+
+C. Querying by Capability:
+Find items based on their features, not their IDs.
+
+// Find the first usable consumable item the player has
+ItemInstance firstPotion = playerInventory.GetFirstItemWithCapability<ConsumableCapability>();
+if (firstPotion != null)
+{
+    Debug.Log($"Found a potion: {firstPotion.Definition.DisplayName}");
+}
+
+// Get a dictionary of all equipment the player owns and their total counts
+Dictionary<string, int> allEquipment = playerInventory.GetAllItemsWithCapability<EquipmentCapability>();
+foreach (var entry in allEquipment)
+{
+    Debug.Log($"Player has {entry.Value} of {entry.Key}");
+}
+
+    Manager-Level Operations
+
+These operations involve two or more inventories and are handled by the InventoryManager.
+
+A. Swapping Items between Slots:
+This directly swaps the contents of any two InventorySlots, regardless of which inventory they belong to.
+
+// Example: Swapping the first item in the player's inventory with the first in a chest
+InventorySlot playerSlot = playerInventory.Slots[0];
+InventorySlot chestSlot = someChestInventory.Slots[0];
+
+_inventoryManager.SwapItems(playerSlot, chestSlot);
+
+B. Transferring an Item Stack:
+This moves a specified amount of an item from a source to a target inventory. It's a transactional operation; if the target is full, the transfer is rolled back.
+
+// Move 10 health potions from the player to a chest
+bool didTransfer = _inventoryManager.TransferItem(playerInventory, someChestInventory, "potion_health", 10);
+if (didTransfer)
+{
+    Debug.Log("Transfer successful!");
+}
+else
+{
+    Debug.Log("Transfer failed. Not enough items or target inventory is full.");
+}
+
+    Responding to Changes (Events)
+
+To update a UI or trigger other logic when an inventory changes, subscribe to the static OnSlotUpdated event on the InventoryComponent class.
+
+This event is fired for any slot in any inventory that gets updated.
+
+// In your UI Manager or relevant script
+
+private void OnEnable()
+{
+    InventoryComponent.OnSlotUpdated += HandleSlotUpdate;
+}
+
+private void OnDisable()
+{
+    InventoryComponent.OnSlotUpdated -= HandleSlotUpdate;
+}
+
+// This method will be called whenever an item is added, removed, or swapped.
+private void HandleSlotUpdate(InventorySlot updatedSlot)
+{
+    // 'updatedSlot' contains the ItemInstance and the owner InventoryComponent
+    Debug.Log($"Inventory '{updatedSlot.Owner.name}' had a slot update!");
+    
+    // Example: Find the UI slot corresponding to this data slot and refresh its icon and count.
+    RefreshUISlot(updatedSlot); 
+}
+
