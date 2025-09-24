@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f30e0788a17ea7a4cb58daf4ce35048b, type: 3}
   m_Name: NewMusicResource
   m_EditorClassIdentifier: 
-  clip: {fileID: 8300000, guid: d81f756743556db44a2f9af904bf740e, type: 3}
+  clip: {fileID: 8300000, guid: 4b8d01cb99ebba041b20fe4352893740, type: 3}
   volume: 1
   loop: 0
   fadeInSeconds: 1
