@@ -135,7 +135,7 @@ namespace AugustsUtility.InventorySystem
 
         public ItemInstance GetFirstItemWithCapability<T>() where T : ItemCapability
         {
-            var slot = Slots.FirstOrDefault(s => !s.IsEmpty() && s.ItemInstance.Definition.HasCapability<T>());
+            var slot = Slots.FirstOrDefault(s => !s.IsEmpty() && s.ItemInstance.Definition.HasCapabilityOfType<T>());
             return slot?.ItemInstance;
         }
 

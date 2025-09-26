@@ -7,7 +7,6 @@ namespace AugustsUtility.ItemSystem
 {
     public static class HandlerRegistry
     {
-        // maps from a Type to an INSTANCE.
         private static readonly Dictionary<Type, ICapabilityHandler> _handlers = new();
         private static bool _built;
 
@@ -23,10 +22,8 @@ namespace AugustsUtility.ItemSystem
 
             foreach (var hType in handlerTypes)
             {
-                // Create a single, persistent instance of the handler.
                 var handlerInstance = (ICapabilityHandler)Activator.CreateInstance(hType);
 
-                // Find the capability type it handles.
                 var baseType = hType.BaseType;
                 if (baseType != null && baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(CapabilityHandler<>))
                 {
@@ -40,6 +37,7 @@ namespace AugustsUtility.ItemSystem
             _built = true;
             Debug.Log($"[HandlerRegistry] Built with {_handlers.Count} handler instances.");
         }
+
         public static bool HasHandlerFor(Type capabilityType)
         {
             if (!_built)
@@ -47,7 +45,21 @@ namespace AugustsUtility.ItemSystem
                 Debug.LogWarning("[HandlerRegistry] Attempted to check for a handler before the registry was built.");
                 return false;
             }
-            return _handlers.ContainsKey(capabilityType);
+
+            // Check direct registration first
+            if (_handlers.ContainsKey(capabilityType))
+                return true;
+
+            // Check if any base type has a handler
+            var currentType = capabilityType.BaseType;
+            while (currentType != null && currentType != typeof(object))
+            {
+                if (_handlers.ContainsKey(currentType))
+                    return true;
+                currentType = currentType.BaseType;
+            }
+
+            return false;
         }
 
         public static void Execute<T>(ItemInstance instance, T cap, object context = null) where T : ActionableCapability
@@ -55,14 +67,59 @@ namespace AugustsUtility.ItemSystem
             if (instance == null || cap == null)
                 return;
 
-            if (_handlers.TryGetValue(cap.GetType(), out var handler))
+            var handler = FindHandlerForCapability(cap.GetType());
+            if (handler != null)
             {
-                // Cast to the specific handler type and execute.
-                (handler as CapabilityHandler<T>)?.Execute(instance, cap, context);
+                // Cast to the base handler type and execute
+                if (handler is CapabilityHandler<T> typedHandler)
+                {
+                    typedHandler.Execute(instance, cap, context);
+                }
+                else
+                {
+                    // Try to find a handler that can handle this capability's base type
+                    ExecuteWithPolymorphicHandler(handler, instance, cap, context);
+                }
             }
             else
             {
                 Debug.LogError($"No handler instance found for capability type {cap.GetType().Name}");
+            }
+        }
+
+        private static ICapabilityHandler FindHandlerForCapability(Type capabilityType)
+        {
+            // Direct lookup first
+            if (_handlers.TryGetValue(capabilityType, out var handler))
+                return handler;
+
+            // Walk up the inheritance chain
+            var currentType = capabilityType.BaseType;
+            while (currentType != null && currentType != typeof(object))
+            {
+                if (_handlers.TryGetValue(currentType, out handler))
+                    return handler;
+                currentType = currentType.BaseType;
+            }
+
+            return null;
+        }
+
+        private static void ExecuteWithPolymorphicHandler<T>(ICapabilityHandler handler, ItemInstance instance, T cap, object context)
+            where T : ActionableCapability
+        {
+            // Use reflection to call the handler's Execute method
+            var executeMethod = handler.GetType().GetMethod("Execute");
+            if (executeMethod != null)
+            {
+                try
+                {
+                    executeMethod.Invoke(handler, new object[] { instance, cap, context });
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error executing handler {handler.GetType().Name} for capability {cap.GetType().Name}: {e.Message}");
+                }
             }
         }
     }

@@ -84,7 +84,7 @@ namespace AugustsUtility.ItemSystem
         {
             if (_items == null)
                 return Enumerable.Empty<ItemDefinition>();
-            return _items.Where(def => def != null && def.HasCapability<T>());
+            return _items.Where(def => def != null && def.HasCapabilityOfType<T>());
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace AugustsUtility.ItemSystem
                 if (def == null)
                     continue;
 
-                foreach (var cap in def.GetCapabilities<ActionableCapability>())
+                foreach (var cap in def.GetCapabilitiesOfType<ActionableCapability>())
                 {
                     var capType = cap.GetType();
                     if (!HandlerRegistry.HasHandlerFor(capType))

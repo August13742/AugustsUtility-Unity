@@ -39,44 +39,26 @@ namespace AugustsUtility.ItemSystem
         {
             serializedObject.Update();
 
-            // Draw the default inspector for all fields except the capabilities list
             DrawPropertiesExcluding(serializedObject, "_capabilities");
 
-            // --- Icon Preview Section ---
             ItemDefinition itemDef = (ItemDefinition)target;
             if (itemDef.Icon != null)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Icon Preview", EditorStyles.boldLabel);
 
-                // Center the preview area horizontally
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
-
-                // Reserve a 128x128 rect for the preview area.
                 Rect previewAreaRect = GUILayoutUtility.GetRect(64, 64);
 
                 if (itemDef.Icon.texture != null)
                 {
-                    // Get sprite texture and rect in pixels
                     Texture2D tex = itemDef.Icon.texture;
                     Rect texRect = itemDef.Icon.textureRect;
-
-                    // Calculate the final drawing rect inside the preview area, preserving aspect ratio
                     Rect finalRect = CalculateAspectRatioRect(texRect, previewAreaRect);
-
-                    // Convert pixel rect to UV coordinates for drawing from an atlas
-                    Rect uvCoords = new Rect(
-                        texRect.x / tex.width,
-                        texRect.y / tex.height,
-                        texRect.width / tex.width,
-                        texRect.height / tex.height
-                    );
-
-                    // Draw the sprite texture with the correct coordinates and aspect ratio
+                    Rect uvCoords = new Rect(texRect.x / tex.width, texRect.y / tex.height, texRect.width / tex.width, texRect.height / tex.height);
                     GUI.DrawTextureWithTexCoords(finalRect, tex, uvCoords);
                 }
-
                 GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
             }
@@ -84,26 +66,27 @@ namespace AugustsUtility.ItemSystem
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Capabilities", EditorStyles.boldLabel);
 
-            // Display the list of currently attached capabilities
             for (int i = 0; i < _capabilitiesProp.arraySize; i++)
             {
                 EditorGUILayout.BeginHorizontal();
 
-                // Draw the capability itself. The 'true' argument ensures its children are drawn.
-                EditorGUILayout.PropertyField(_capabilitiesProp.GetArrayElementAtIndex(i), true);
+                SerializedProperty elem = _capabilitiesProp.GetArrayElementAtIndex(i);
+                string typeName = GetManagedRefShortType(elem); // e.g., "ConsumableCapability" or "CraftableCapability"
+                GUIContent label = new GUIContent($"Element {i} ({typeName})");
 
-                // Add a remove button
+                // Use the custom label instead of Unity’s default “Element i”
+                EditorGUILayout.PropertyField(elem, label, /* includeChildren: */ true);
+
                 if (GUILayout.Button("X", GUILayout.Width(25), GUILayout.Height(25)))
                 {
-                    // Important: First, null the reference. Then delete the array element.
-                    _capabilitiesProp.GetArrayElementAtIndex(i).managedReferenceValue = null;
+                    elem.managedReferenceValue = null;
                     _capabilitiesProp.DeleteArrayElementAtIndex(i);
                 }
+
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space(2);
             }
 
-            // The "Add Capability" button and dropdown menu
             if (GUILayout.Button("Add Capability"))
             {
                 ShowAddCapabilityMenu();
@@ -111,7 +94,20 @@ namespace AugustsUtility.ItemSystem
 
             serializedObject.ApplyModifiedProperties();
         }
+        // Extracts "TypeName" from managedReferenceFullTypename which is like "AssemblyName Namespace.TypeName"
+        private static string GetManagedRefShortType(SerializedProperty prop)
+        {
+            string full = prop.managedReferenceFullTypename; // null or "" if element is null
+            if (string.IsNullOrEmpty(full))
+                return "null";
 
+            // Format is "AssemblyName Namespace.TypeName"
+            int space = full.IndexOf(' ');
+            string typeWithNs = space >= 0 ? full.Substring(space + 1) : full;
+
+            int lastDot = typeWithNs.LastIndexOf('.');
+            return lastDot >= 0 ? typeWithNs.Substring(lastDot + 1) : typeWithNs;
+        }
         private void ShowAddCapabilityMenu()
         {
             GenericMenu menu = new GenericMenu();

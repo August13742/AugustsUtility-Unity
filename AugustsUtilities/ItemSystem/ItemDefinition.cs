@@ -30,14 +30,15 @@ namespace AugustsUtility.ItemSystem
         public string Description => _description;
 
         [Tooltip("A list of capabilities that define this item's behavior.")]
-        [SerializeReference] private List<ItemCapability> _capabilities = new List<ItemCapability>();
+        [SerializeReference]
+        private List<ItemCapability> _capabilities = new List<ItemCapability>();
 
         /// <summary>
         /// Retrieves the first capability of a specific type.
         /// </summary>
         /// <typeparam name="T">The type of capability to find.</typeparam>
         /// <returns>The capability if found, otherwise null.</returns>
-        public T GetCapability<T>() where T : ItemCapability
+        public T GetFirstCapabilityOfType<T>() where T : ItemCapability
         {
             return _capabilities.OfType<T>().FirstOrDefault();
         }
@@ -47,7 +48,7 @@ namespace AugustsUtility.ItemSystem
         /// </summary>
         /// <typeparam name="T">The type of capabilities to find.</typeparam>
         /// <returns>An enumerable collection of matching capabilities.</returns>
-        public IEnumerable<T> GetCapabilities<T>() where T : ItemCapability
+        public IEnumerable<T> GetCapabilitiesOfType<T>() where T : ItemCapability
         {
             return _capabilities.OfType<T>();
         }
@@ -58,7 +59,7 @@ namespace AugustsUtility.ItemSystem
         /// </summary>
         /// <typeparam name="T">The type of capability to check for.</typeparam>
         /// <returns>True if the capability exists, otherwise false.</returns>
-        public bool HasCapability<T>() where T : ItemCapability
+        public bool HasCapabilityOfType<T>() where T : ItemCapability
         {
             return _capabilities.OfType<T>().Any();
         }

@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 using RPG.Utilities;
-
+namespace AugustsUtility.ItemSystem.Example
+{
 
     public class HealthComponent : MonoBehaviour
     {
@@ -16,7 +17,10 @@ using RPG.Utilities;
                 CurrentHealth = value;
             }
         }
-        public float CurrentHealth { get; set; }
+        public float CurrentHealth
+        {
+            get; set;
+        }
 
         public event Action HealthChanged;
         public event Action Died;
@@ -36,13 +40,13 @@ using RPG.Utilities;
             }
             else
             {
-                CurrentHealth = Mathf.Min(CurrentHealth+amount, MaxHealth);
+                CurrentHealth = Mathf.Min(CurrentHealth + amount, MaxHealth);
                 HealthChanged?.Invoke();
             }
         }
         public void FullHeal()
         {
-        Restore(MaxHealth);
+            Restore(MaxHealth);
         }
         public void Damaged(float amount)
         {
@@ -64,5 +68,5 @@ using RPG.Utilities;
 
     }
 
-
+}
 

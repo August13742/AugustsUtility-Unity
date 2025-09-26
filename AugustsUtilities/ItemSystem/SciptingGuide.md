@@ -74,10 +74,10 @@ You can query an ItemDefinition to see what it can do and access the data associ
 ItemDefinition swordDef = _database.GetByID("weapon_sword");
 
 // Check if the item is equipment
-if (swordDef.HasCapability<EquipmentCapability>())
+if (swordDef.HasCapabilityOfType<EquipmentCapability>())
 {
     // Get the capability's data to read its properties
-    var equipCap = swordDef.GetCapability<EquipmentCapability>();
+    var equipCap = swordDef.GetCapabilityOfType<EquipmentCapability>();
     Debug.Log($"Damage: {equipCap.Damage}");
 }
 
@@ -97,7 +97,7 @@ A. Executing a single, known action:
 
 
 // Assume 'player' is the GameObject of the user and 'potionInstance' is a valid ItemInstance
-var consumableCap = potionInstance.Definition.GetCapability<ConsumableCapability>();
+var consumableCap = potionInstance.Definition.GetCapabilityOfType<ConsumableCapability>();
 
 if (consumableCap != null)
 {
@@ -114,7 +114,7 @@ This is the most powerful and common pattern. It allows items like the "Omni Pot
 
 Debug.Log($"--- Using {itemInstance.Definition.DisplayName} ---");
 
-var allActionableCaps = itemInstance.Definition.GetCapabilities<ActionableCapability>();
+var allActionableCaps = itemInstance.Definition.GetCapabilitiesOfType<ActionableCapability>();
 
 int actionsFound = 0;
 foreach (var cap in allActionableCaps)
