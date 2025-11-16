@@ -8,23 +8,9 @@ Battle-tested in prototypes, not in commercial releases. Use like any other shar
 ## Table of Contents
 
 1. Overview
-2. Packages
-   - Item System
-   - Inventory System
-   - Audio System
-   - Camera Shake (`AugustsUtility.CameraShake`)
-   - Tween System (`AugustsUtility.Tween`)
-   - Telegraph / Hitbox Utilities (`AugustsUtility.Telegraph`)
-3. Installation
-4. Quick Start Snippets
-   - Item / Inventory
-   - Audio
-   - Camera Shake
-   - Tween
-   - Telegraph
-5. Usage Notes
-6. Testing
-7. License
+2. Installation
+3. Usage Notes
+4. License
 
 ---
 
@@ -51,32 +37,39 @@ and so on, all under `AugustsUtility.*` namespaces.
 
 ---
 
-## 2. Packages
 
-### 2.1 Item System
+## 2. Installation
 
-Capability-oriented item definitions using `ScriptableObject`s as the data source.
+1. **Copy the folder**
+   Drop `AugustsUtilities/` into your Unity project (anywhere under `Assets/`).
 
-- **Data-driven**: `ItemDatabase` is a ScriptableObject index of all item definitions.
-- **Component-based**: Item behavior is built out of “capabilities”
-  (`ConsumableCapability`, `EquipmentCapability`, custom ones, etc.).
-- **Editor-friendly**: You define item assets; the database is auto-built or rebuilt via a menu command.
+2. **Delete what you don’t need**
+   This is not meant to be a monolithic framework. If you don’t need a system, delete its folder.
 
-Conceptual flow:
+3. **Wire singletons**
+   For systems that expect a single instance (audio manager, inventory manager, tween runner, camera shake, etc.):
 
-1. Create `ItemDefinition` assets (ID + stats + capability list).
-2. Build / refresh the `ItemDatabase` asset.
-3. At runtime, query by ID and execute capabilities through a handler registry.
+   * Put the prefab / GameObject into a bootstrap scene.
+   * Optionally mark as `DontDestroyOnLoad` if you want it across scenes.
 
-**API sketch:**
+---
 
-```csharp
-// Load the database (cached internally)
-var db = Resources.Load<ItemDatabase>("ItemDatabase");
+## 3. Usage Notes
 
-// Query for definitions
-var potion = db.GetByID("potion_health");
-var allEquipment = db.GetAllItemsWithCapability<EquipmentCapability>();
+* **Singleton assumptions**
+  Audio, inventory manager, tween runner, camera shake, etc. are written assuming *one* instance.
+  If you want multiple, you’ll have to adjust the static access pattern.
 
-// Execute an item capability
-HandlerRegistry.Execute(potionInstance, capability, userGameObject);
+* **IDs are strings**
+  Item lookups are string ID–based; keep them unique and centralized in the database.
+
+* **Resources path**
+  The item database is loaded from `Resources/ItemDatabase.asset` by default
+  (see the generated loader if you need to change this).
+
+---
+
+## 4. License
+
+MIT. Do whatever
+
