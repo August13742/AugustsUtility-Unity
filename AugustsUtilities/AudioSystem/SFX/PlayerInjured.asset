@@ -10,10 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3a94225b1594ba4f8ea50e97f2825e4, type: 3}
-  m_Name: NewSFXResource 2
+  m_Name: PlayerInjured
   m_EditorClassIdentifier: 
-  eventName: test1
-  clip: {fileID: 8300000, guid: 082517d573f93774ea29c86793a7515b, type: 3}
-  loop: 0
-  volumeLinear: 1
-  pitchScale: 1
+  clips:
+  - {fileID: 8300000, guid: 53c59cea9eeb46748aaa864d029c5b6b, type: 3}
+  priority: 1
+  volume: 1
+  volumeVariance: 0.1
+  pitch: 1
+  pitchVariance: 0.1
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 25
+  bypassSpatial: 0
+  useSpatialCoalescing: 1
+  minSpatialSeparation: 5
+  mixerGroup: {fileID: 0}

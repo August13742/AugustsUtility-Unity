@@ -10,10 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3a94225b1594ba4f8ea50e97f2825e4, type: 3}
-  m_Name: NewSFXResource 3
+  m_Name: ExpPickupSFX 1
   m_EditorClassIdentifier: 
-  eventName: test1
-  clip: {fileID: 8300000, guid: 4e89f6c4a1821df40a3f1ff2d4e88398, type: 3}
+  clips:
+  - {fileID: 8300000, guid: d2769823ee657d14d8c4f455c7d57fbe, type: 3}
   loop: 0
-  volumeLinear: 1
-  pitchScale: 1
+  priority: 256
+  volume: 0.9
+  volumeVariance: 0.1
+  pitch: 1
+  pitchVariance: 0.1
+  spatialBlend: 1
+  minDistance: 1
+  maxDistance: 5
+  bypassSpatial: 1
+  useSpatialCoalescing: 1
+  minSpatialSeparation: 5
+  mixerGroup: {fileID: 0}
